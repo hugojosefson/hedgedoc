@@ -7,6 +7,7 @@ import { LogLevel } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 import { AppModule } from './app.module';
 import { AppConfig } from './config/app.config';
@@ -24,6 +25,7 @@ async function bootstrap(): Promise<void> {
     logger: ['error', 'warn', 'log'] as LogLevel[],
     bufferLogs: true,
   });
+  app.useWebSocketAdapter(new WsAdapter(app));
   const logger = await app.resolve(ConsoleLoggerService);
   logger.log('Switching logger', 'AppBootstrap');
   app.useLogger(logger);
