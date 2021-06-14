@@ -19,6 +19,7 @@ import { UsersService } from '../../users/users.service';
 import { Note } from '../../notes/note.entity';
 import { NoteClientMap } from './note-client-map';
 import { MessageHandlerCallbackResponse } from './yjs.adapter';
+import { MessageType } from './message-type';
 
 /**
  * Gateway implementing the realtime logic required for realtime note editing.
@@ -100,7 +101,7 @@ export class RealtimeEditorGateway implements OnGatewayConnection, OnGatewayDisc
    * @returns void If no response should be send for this request back to the client.
    * @returns Uint8Array Binary data that should be send as a response to the message back to the client.
    */
-  @SubscribeMessage('messageSync')
+  @SubscribeMessage(MessageType.SYNC)
   handleMessageSync(client: WebSocket, @MessageBody() data: Uint8Array): MessageHandlerCallbackResponse {
     this.logger.log('Received SYNC message');
     return Promise.resolve()
@@ -114,7 +115,7 @@ export class RealtimeEditorGateway implements OnGatewayConnection, OnGatewayDisc
    * @returns void If no response should be send for this request back to the client.
    * @returns Uint8Array Binary data that should be send as a response to the message back to the client.
    */
-  @SubscribeMessage('messageAwareness')
+  @SubscribeMessage(MessageType.AWARENESS)
   handleMessageAwareness(client: WebSocket, @MessageBody() data: Uint8Array): MessageHandlerCallbackResponse {
     this.logger.log('Received AWARENESS message');
     return Promise.resolve()
@@ -128,7 +129,7 @@ export class RealtimeEditorGateway implements OnGatewayConnection, OnGatewayDisc
    * @returns void If no response should be send for this request back to the client.
    * @returns Uint8Array Binary data that should be send as a response to the message back to the client.
    */
-  @SubscribeMessage('messageHedgeDoc')
+  @SubscribeMessage(MessageType.HEDGEDOC)
   handleMessageHedgeDoc(client: WebSocket, @MessageBody() data: Uint8Array): MessageHandlerCallbackResponse {
     this.logger.log('Received HEDGEDOC message');
     return Promise.resolve()
