@@ -3,8 +3,8 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-
 import WebSocket from 'ws';
+
 // TODO Add unit tests
 
 /**
@@ -22,12 +22,12 @@ export class NoteClientMap {
    * @param noteId The internal id (from database) of the note that the client accesses.
    * @throws Error if the client already exists in this mapping instance.
    */
-  public addClient (client: WebSocket, noteId: string): void {
+  public addClient(client: WebSocket, noteId: string): void {
     if (this.clientToNoteId.has(client)) {
       throw new Error('Client already exists in map');
     }
     this.clientToNoteId.set(client, noteId);
-    const clients = this.noteIdToClients.get(noteId)
+    const clients = this.noteIdToClients.get(noteId);
     if (!clients) {
       this.noteIdToClients.set(noteId, [client]);
       return;
@@ -41,7 +41,7 @@ export class NoteClientMap {
    * @param client The WebSocket client to remove. Must be added to the instance in beforehand.
    * @throws Error if the client does not exist in this mapping instance.
    */
-  public removeClient (client: WebSocket): void {
+  public removeClient(client: WebSocket): void {
     const noteId = this.getNoteIdByClient(client);
     if (!noteId) {
       throw new Error('Client does not exist in map');
@@ -51,7 +51,7 @@ export class NoteClientMap {
     if (!clients) {
       return;
     }
-    const filteredClients = clients.filter(aClient => aClient === client);
+    const filteredClients = clients.filter((aClient) => aClient === client);
     if (filteredClients.length === 0) {
       this.noteIdToClients.delete(noteId);
     } else {
@@ -64,7 +64,7 @@ export class NoteClientMap {
    * @param noteId The internal identifier (from database) of the note.
    * @returns WebSocket[] An array of WebSocket clients.
    */
-  public getClientsByNoteId (noteId: string): WebSocket[] {
+  public getClientsByNoteId(noteId: string): WebSocket[] {
     const clients = this.noteIdToClients.get(noteId);
     if (!clients) {
       throw new Error('noteId does not exist in map');
@@ -78,7 +78,7 @@ export class NoteClientMap {
    * @returns string The identifier of the note, if found in this mapping instance.
    * @returns undefined If the client is not present in this mapping instance.
    */
-  public getNoteIdByClient (client: WebSocket): string | undefined {
+  public getNoteIdByClient(client: WebSocket): string | undefined {
     return this.clientToNoteId.get(client);
   }
 
@@ -86,7 +86,7 @@ export class NoteClientMap {
    * Returns the number of clients connected to any note.
    * @returns number The number of WebSocket clients.
    */
-  public countClients (): number {
+  public countClients(): number {
     return this.clientToNoteId.size;
   }
 
@@ -96,7 +96,7 @@ export class NoteClientMap {
    * in removal of this note id in the mapping instance.
    * @returns number The number of notes with at least one active client connection.
    */
-  public countNotes (): number {
+  public countNotes(): number {
     return this.noteIdToClients.size;
   }
 }

@@ -10,22 +10,24 @@ import {
   OnGatewayDisconnect,
   MessageBody,
 } from '@nestjs/websockets';
-import WebSocket from 'ws';
 import { IncomingMessage } from 'http';
+import WebSocket from 'ws';
+
 import { ConsoleLoggerService } from '../../logger/console-logger.service';
+import { Note } from '../../notes/note.entity';
 import { NotesService } from '../../notes/notes.service';
 import { PermissionsService } from '../../permissions/permissions.service';
 import { UsersService } from '../../users/users.service';
-import { Note } from '../../notes/note.entity';
+import { MessageType } from './message-type';
 import { NoteClientMap } from './note-client-map';
 import { MessageHandlerCallbackResponse } from './yjs.adapter';
-import { MessageType } from './message-type';
 
 /**
  * Gateway implementing the realtime logic required for realtime note editing.
  */
 @WebSocketGateway()
-export class RealtimeEditorGateway implements OnGatewayConnection, OnGatewayDisconnect
+export class RealtimeEditorGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(
     private readonly logger: ConsoleLoggerService,
@@ -33,7 +35,7 @@ export class RealtimeEditorGateway implements OnGatewayConnection, OnGatewayDisc
     private permissionsService: PermissionsService,
     private userService: UsersService,
   ) {
-    this.logger.setContext(RealtimeEditorGateway.name)
+    this.logger.setContext(RealtimeEditorGateway.name);
   }
 
   /** Mapping instance keeping track of WebSocket clients and their associated note identifier. */
@@ -47,12 +49,14 @@ export class RealtimeEditorGateway implements OnGatewayConnection, OnGatewayDisc
   handleDisconnect(client: WebSocket): void {
     const noteIdOfClient = this.noteClientMap.getNoteIdByClient(client);
     if (noteIdOfClient === undefined) {
-      this.logger.log('Undefined noteid for client')
+      this.logger.log('Undefined noteid for client');
       return;
     }
     this.logger.log(`Client disconnected from note '${noteIdOfClient}'`);
     this.noteClientMap.removeClient(client);
-    this.logger.log(`Status: ${this.noteClientMap.countClients()} users online on ${this.noteClientMap.countNotes()} notes`)
+    this.logger.log(
+      `Status: ${this.noteClientMap.countClients()} users online on ${this.noteClientMap.countNotes()} notes`,
+    );
     // TODO If this client was the last one participating on a note, close the YDoc of the note and store it to the db.
   }
 
@@ -65,8 +69,11 @@ export class RealtimeEditorGateway implements OnGatewayConnection, OnGatewayDisc
    * @param client The WebSocket client object.
    * @param req The underlying HTTP request of the WebSocket connection.
    */
-  async handleConnection(client: WebSocket, req: IncomingMessage): Promise<void> {
-    client.on('close', () => this.handleDisconnect(client))
+  async handleConnection(
+    client: WebSocket,
+    req: IncomingMessage,
+  ): Promise<void> {
+    client.on('close', () => this.handleDisconnect(client));
     const url = req.url ?? '';
     const pathMatching = /^\/realtime\/(.+)$/.exec(url);
     if (!pathMatching || pathMatching.length < 2) {
@@ -89,12 +96,18 @@ export class RealtimeEditorGateway implements OnGatewayConnection, OnGatewayDisc
     if (!this.permissionsService.mayRead(user, note)) {
       // TODO Send error message to client to avoid reconnects for same note
       client.close();
-      this.logger.log(`Reading note '${noteIdFromPath}' by user '${user.username}' denied!`);
+      this.logger.log(
+        `Reading note '${noteIdFromPath}' by user '${user.username}' denied!`,
+      );
       return;
     }
     this.noteClientMap.addClient(client, note.id);
-    this.logger.log(`Connection to note '${note.id}' by user '${user.username}'`);
-    this.logger.log(`Status: ${this.noteClientMap.countClients()} users online on ${this.noteClientMap.countNotes()} notes`);
+    this.logger.log(
+      `Connection to note '${note.id}' by user '${user.username}'`,
+    );
+    this.logger.log(
+      `Status: ${this.noteClientMap.countClients()} users online on ${this.noteClientMap.countNotes()} notes`,
+    );
   }
 
   /**
@@ -106,9 +119,12 @@ export class RealtimeEditorGateway implements OnGatewayConnection, OnGatewayDisc
    * @returns Uint8Array Binary data that should be send as a response to the message back to the client.
    */
   @SubscribeMessage(MessageType.SYNC)
-  handleMessageSync(client: WebSocket, @MessageBody() data: Uint8Array): MessageHandlerCallbackResponse {
+  handleMessageSync(
+    client: WebSocket,
+    @MessageBody() data: Uint8Array,
+  ): MessageHandlerCallbackResponse {
     this.logger.log('Received SYNC message');
-    return Promise.resolve()
+    return Promise.resolve();
   }
 
   /**
@@ -120,9 +136,12 @@ export class RealtimeEditorGateway implements OnGatewayConnection, OnGatewayDisc
    * @returns Uint8Array Binary data that should be send as a response to the message back to the client.
    */
   @SubscribeMessage(MessageType.AWARENESS)
-  handleMessageAwareness(client: WebSocket, @MessageBody() data: Uint8Array): MessageHandlerCallbackResponse {
+  handleMessageAwareness(
+    client: WebSocket,
+    @MessageBody() data: Uint8Array,
+  ): MessageHandlerCallbackResponse {
     this.logger.log('Received AWARENESS message');
-    return Promise.resolve()
+    return Promise.resolve();
   }
 
   /**
@@ -134,8 +153,11 @@ export class RealtimeEditorGateway implements OnGatewayConnection, OnGatewayDisc
    * @returns Uint8Array Binary data that should be send as a response to the message back to the client.
    */
   @SubscribeMessage(MessageType.HEDGEDOC)
-  handleMessageHedgeDoc(client: WebSocket, @MessageBody() data: Uint8Array): MessageHandlerCallbackResponse {
+  handleMessageHedgeDoc(
+    client: WebSocket,
+    @MessageBody() data: Uint8Array,
+  ): MessageHandlerCallbackResponse {
     this.logger.log('Received HEDGEDOC message');
-    return Promise.resolve()
+    return Promise.resolve();
   }
 }
