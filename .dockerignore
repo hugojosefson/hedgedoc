@@ -29,3 +29,4 @@ public/uploads/*
 
 site/
 /env
+/.isolate-in-docker/
